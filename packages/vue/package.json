@@ -9,6 +9,15 @@
       "import": "./dist/index.js"
     }
   },
+  "keywords": [
+    "vue",
+    "vue.js",
+    "plugin",
+    "vue-plugin",
+    "vue-i18n",
+    "i18n",
+    "internationalization"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/padcom/vue-i18n"

@@ -11,7 +11,14 @@
     }
   },
   "keywords": [
-    "vite-plugin"
+    "vite-plugin",
+    "padcom",
+    "vue",
+    "vue.js",
+    "plugin",
+    "vue-i18n",
+    "i18n",
+    "internationalization"
   ],
   "repository": {
     "type": "git",
