@@ -4,6 +4,7 @@
   "author": "Matthias Hryniszak <padcom@gmail.com>",
   "license": "Apache-2.0",
   "type": "module",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
