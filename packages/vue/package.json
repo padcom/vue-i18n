@@ -1,6 +1,6 @@
 {
   "name": "@padcom/vue-i18n",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": "Matthias Hryniszak <padcom@gmail.com>",
   "license": "Apache-2.0",
   "type": "module",
