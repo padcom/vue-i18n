@@ -1,6 +1,6 @@
 {
   "name": "@padcom/vite-plugin-vue-i18n",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": "Matthias Hryniszak <padcom@gmail.com>",
   "license": "Apache-2.0",
   "type": "module",
