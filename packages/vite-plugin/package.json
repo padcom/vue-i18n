@@ -3,12 +3,13 @@
   "version": "0.0.7",
   "author": "Matthias Hryniszak <padcom@gmail.com>",
   "license": "Apache-2.0",
+  "main": "./dist/index.umd.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "module": "./dist/index.js",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
       "require": "./dist/index.umd.js",
+      "import": "./dist/index.mjs",
       "types": "./dist/index.d.ts"
     }
   },
