@@ -10,7 +10,7 @@ export default defineConfig ({
     lib: {
       entry: 'index.ts',
       name: 'vite-plugin-vue-i18n',
-      formats: ['es'],
+      formats: ['es','umd'],
       fileName: 'index',
     },
     sourcemap: true,
