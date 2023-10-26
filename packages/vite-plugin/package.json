@@ -1,0 +1,42 @@
+{
+  "name": "@padcom/vite-plugin-vue-i18n",
+  "version": "0.0.0",
+  "author": "Matthias Hryniszak <padcom@gmail.com>",
+  "license": "Apache-2.0",
+  "type": "module",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    }
+  },
+  "keywords": [
+    "vite-plugin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/padcom/vue-i18n"
+  },
+  "bugs": {
+    "url": "https://github.com/padcom/vue-i18n/issues"
+  },
+  "funding": {
+    "type": "patreon",
+    "url": "https://www.patreon.com/padcom"
+  },
+  "scripts": {
+    "start": "npm run dev",
+    "dev": "npm run build:watch",
+    "build": "vite build",
+    "build:watch": "npm run build -- -w",
+    "prepublishOnly": "npm install && npm run build"
+  },
+  "dependencies": {
+    "@padcom/vue-i18n-common": "*"
+  },
+  "devDependencies": {
+    "typescript": "*",
+    "vite": "*",
+    "vite-plugin-dts": "*"
+  }
+}
