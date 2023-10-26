@@ -14,7 +14,7 @@ export default defineConfig({
     lib: {
       entry: './index.ts',
       name: 'vue-i18n',
-      formats: ['es'],
+      formats: ['es', 'umd'],
       fileName: 'index',
     },
     sourcemap: true,
