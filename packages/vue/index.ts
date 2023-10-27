@@ -14,7 +14,7 @@ export const VueI18NFallbackLocaleSymbol = Symbol('vue-i18n-fallback-locale') as
 export const VueI18NLocaleSymbol = Symbol('vue-i18n-locale') as InjectionKey<Ref<string>>
 
 function getAgentLocale() {
-  return globalThis.navigator?.language.split('-')[0]
+  return globalThis.navigator?.language.split('-')[0] || 'en'
 }
 
 /**
@@ -36,6 +36,11 @@ function provideContextValues(provide: any, {
   provide(VueI18NLocaleSymbol, ref(localeRef))
 
   provide(VueI18NTranslationsSymbol, messages)
+
+  return {
+    locale: localeRef,
+    fallbackLocale: fallbackLocaleRef,
+  }
 }
 
 /**
@@ -48,7 +53,7 @@ function provideContextValues(provide: any, {
  * Counterpart to the i18n plugin
  */
 export function createI18Context(options: CreateI18Options) {
-  provideContextValues(provide, options)
+  return provideContextValues(provide, options)
 }
 
 /**
@@ -85,7 +90,7 @@ export function useI18n({
 }: UseI18nOptions = {}) {
   const instance = getCurrentInstance()
   const local: Translations = (instance?.type as any).i18n || {}
-  const global = inject(VueI18NTranslationsSymbol) || ref({})
+  const global: Translations = inject(VueI18NTranslationsSymbol) || {}
   const locale = inject(VueI18NLocaleSymbol) || ref(getAgentLocale())
   const fallbackLocale = inject(VueI18NFallbackLocaleSymbol) || ref(getAgentLocale())
 
