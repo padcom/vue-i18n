@@ -34,6 +34,15 @@ export default defineConfig({
 
 Nothing really fancy, but needs to be done so that Vite understands how to process the `<i18n>` blocks in `.vue` files.
 
+### Installing the Vue.js part
+
+First things first, you need to install the part that provides the actual i18n capabilities:
+
+```
+npm install --save-dev @padcom/vue-i18n
+```
+
+
 ### Providing messages context
 
 In contrast to the original `vue-i18n` plugin this one does not provide a global function that can inject messages from the global scope. Instead, everything is done using composition functions and Vue's native `provide`/`inject`.
