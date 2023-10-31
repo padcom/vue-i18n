@@ -2,7 +2,7 @@
 
 This package implements simplified mechanism for internationalization (i18n) of components in Vue.js.
 
-### TLDR;
+## TLDR;
 
 If you want to see all the bits and pieces in action check out the [example](packages/example)
 
