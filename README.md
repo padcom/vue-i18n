@@ -4,7 +4,7 @@ This package implements simplified mechanism for internationalization (i18n) of 
 
 ## TLDR;
 
-If you want to see all the bits and pieces in action check out the [example](tree/master/packages/example)
+If you want to see all the bits and pieces in action check out the [example](packages/example)
 
 ## Installation
 
