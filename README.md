@@ -2,6 +2,10 @@
 
 This package implements simplified mechanism for internationalization (i18n) of components in Vue.js.
 
+## TLDR;
+
+If you want to see all the bits and pieces in action check out the [example](tree/master/packages/example)
+
 ## Installation
 
 There are 2 parts to making this system work:
