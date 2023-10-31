@@ -119,3 +119,93 @@ With that kind of structure, this is how you would import the messages when you 
 import * as messages from './i18n'
 ```
 
+## Usage
+
+Once you've installed and configured everything using this system is very simple:
+
+```vue
+<template>
+  <h1>{{ t('message') }}</h1>
+</template>
+
+<script lang="ts" setup>
+import { useI18n } from '@padcom/vue-i18n'
+
+const { t } = useI18n()
+</script>
+
+<i18n>
+{
+  "en": {
+    "message": "Hello, world!",
+  },
+  "de": {
+    "message": "Hallo Welt!",
+  }
+}
+</i18n>
+```
+
+### Forcing resolution to use global messages only
+
+Sometimes you might have duplicated message ids. In general you should try to avoid it as it makes reasoning about the code more difficult. Nevertheless, real world sometimes makes us do things we will regret later on and this system is not going to stand in your way.
+
+You can enforce the `t` to use global messages by specifying the `useScope` key when calling `useI18n()`:
+
+```typescript
+const { t } = useI18n({ useScope: 'global' })
+```
+
+### Disabling global messages resolution
+
+Sometimes you might want your component to only use local translations. This system has you covered:
+
+```typescript
+const { t } = useI18n({ useScope: 'local' })
+```
+
+The default value for `useScope` is `'local-first'`, which means you'll get the the local value if defined or else the system will default to global scope.
+
+### Language selection
+
+The system implements a simplistic, but powerful resolution system to get the message.
+
+There are 2 locales that you can choose from:
+
+1. `locale`
+2. `fallbackLocale`
+
+Both are initialized to the country code of the client's browser (e.g. `'en'`). But you can change them however you'd like either when installing the application plugin:
+
+```typescript
+createApp(App)
+  .use(i18n, {
+    messages,
+    locale: 'xy',
+    fallbackLocale: 'au'
+  })
+  .mount('#app')
+```
+
+or when creating the context:
+
+```typescript
+const { locale, fallbackLocale } = createI18Context({
+  messages,
+  locale: 'xy',
+  fallbackLocale: 'au',
+})
+```
+
+The message resolution is as follows:
+
+1. Try to resolve the given key using `locale` from `<i18n>` provided keys
+2. Try to resolve the given key using `fallbackLocale` from `<i18n>` provided keys
+3. Try to resolve the given key using global scope messages using `locale`
+4. Try to resolve the given key using global scope messages using `fallbackLocale`
+
+## Closing thoughts
+
+This internationalization system was created specifically because the original [vue-i18n](https://kazupon.github.io/vue-i18n) plugin makes it impossible to use it in the context of webcomponents. It's a design choice they have made and that's not going to change any time soon.
+
+However, if you don't need webcomponents interoperability and you're happy with how the original plugin works or if you need some of the advanced features (like pluralization or message arguments) then you should definitely go with the original one. It's much more robust and this system will probably never grow to be as complete as the original one is.
