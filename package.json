@@ -2,7 +2,8 @@
   "workspaces": [
     "packages/common",
     "packages/vue",
-    "packages/vite-plugin"
+    "packages/vite-plugin",
+    "packages/example"
   ],
   "scripts": {
     "start": "npm run dev",

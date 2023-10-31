@@ -1,12 +1,11 @@
 import type { Plugin } from 'vite'
-import type { Translations } from '@padcom/vue-i18n-common'
 
 interface I18nPluginOptions {
 }
 
 export default function vueI18n(options: I18nPluginOptions): Plugin {
   return {
-    name: 'vue-i18n-ng',
+    name: '@padcom/vue-i18n',
     transform(code: string, id: string) {
       // if .vue file don't have <i18n> block, just return
       if (!/vue&type=i18n/.test(id)) {
@@ -22,7 +21,7 @@ export default function vueI18n(options: I18nPluginOptions): Plugin {
         code = this.originalCode
 
         if (!code) {
-          throw new Error('Error while getting original content of JSON i18n definitions: originalCode is missing')
+          throw new Error('Error while getting original content of JSON i18n definitions: originalCode is missing.')
         }
       // For future use: enable yaml-based messages
       // } else if (/\.ya?ml$/.test(id)) {
@@ -33,7 +32,10 @@ export default function vueI18n(options: I18nPluginOptions): Plugin {
 
       // mount the value on the i18n property of the component instance
       // eslint-disable-next-line consistent-return
-      return `export default Comp => { Comp.i18n = ${code} }`
+      return {
+        code: `export default Comp => { Comp.i18n = ${code} }`,
+        map: null,
+      }
     },
   }
 }

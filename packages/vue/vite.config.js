@@ -18,5 +18,8 @@ export default defineConfig({
       fileName: 'index',
     },
     sourcemap: true,
+    rollupOptions: {
+      external: ['vue'],
+    }
   },
 })
