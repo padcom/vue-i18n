@@ -94,6 +94,12 @@ export function getPropValue(obj: any, prop: string): any {
   }
 }
 
+function replacePlaceholder(context: Object & Record<string, any>) {
+  return (placeholder: string, slot: string) => {
+    return context.hasOwnProperty(slot) ? context[slot] : placeholder
+  }
+}
+
 /**
  * Enables the use of translation in composables and setup function
  */
@@ -113,7 +119,7 @@ export function useI18n({
   return {
     fallbackLocale,
     locale,
-    t(key: string) {
+    t(key: string, context: Object & Record<string, any> = {}) {
       const localKeys = useScope === 'global' ? {} : local[locale.value] || local[fallbackLocale.value] || {}
       const fallbackLocalKeys = useScope === 'global' ? {} : local[fallbackLocale.value] || {}
       const globalKeys = useScope === 'local' ? {} : global[locale.value] || global[fallbackLocale.value] || {}
@@ -125,7 +131,10 @@ export function useI18n({
         ...localKeys,
       }
 
-      return getPropValue(translations, key) || key
+      const message = getPropValue(translations, key) || key
+      const result = message.replace(/{(\w+)}/g, replacePlaceholder(context))
+
+      return result
     },
   }
 }

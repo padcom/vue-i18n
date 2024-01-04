@@ -1,6 +1,6 @@
 <template>
   <h1>{{ t('hello.message') }}</h1>
-  <h2>{{ t('example.message') }}!!!</h2>
+  <h2>{{ t('example.message', { name: 'John', age: 42 }) }}</h2>
   <h3>{{ t('greeting') }}</h3>
 </template>
 
@@ -14,7 +14,7 @@ const { t } = useI18n()
 {
   "en": {
     "example": {
-      "message": "This is an example message"
+      "message": "This is an example message to {name} {age}"
     }
   }
 }
