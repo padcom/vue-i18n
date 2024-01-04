@@ -6,15 +6,14 @@
     "packages/example"
   ],
   "scripts": {
-    "start": "npm run dev",
-    "dev": "run-p dev:*",
-    "dev:vue": "npm run dev --workspace packages/vue",
-    "dev:vite-plugin": "npm run dev --workspace packages/vite-plugin",
-    "build": "npm run build --workspaces --if-present",
+    "start": "mrdr",
+    "dev": "mrdr",
+    "build": "mrdr run build",
     "publish": "npm publish --workspaces --if-present"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.4.0",
+    "mrdr": "^0.1.2",
     "npm-run-all": "^4.1.5",
     "typescript": "5.0.4",
     "vite": "^4.5.0",
