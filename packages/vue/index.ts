@@ -82,6 +82,18 @@ interface UseI18nOptions {
   useScope?: 'local-first' | 'local' | 'global'
 }
 
+export function getPropValue(obj: any, prop: string): any {
+  if (!obj) return null
+
+  const [current, ...rest] = prop.split('.')
+  if (rest.length === 0) {
+    if (typeof obj[current] === 'object') return undefined
+    else return obj[current]
+  } else {
+    return getPropValue(obj[current], rest.join('.'))
+  }
+}
+
 /**
  * Enables the use of translation in composables and setup function
  */
@@ -113,7 +125,7 @@ export function useI18n({
         ...localKeys,
       }
 
-      return translations[key] || key
+      return getPropValue(translations, key) || key
     },
   }
 }

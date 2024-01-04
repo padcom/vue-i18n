@@ -1,6 +1,7 @@
 <template>
-  <h1>{{ t('hello') }}</h1>
-  <h2>{{ t('example') }}!!!</h2>
+  <h1>{{ t('hello.message') }}</h1>
+  <h2>{{ t('example.message') }}!!!</h2>
+  <h3>{{ t('greeting') }}</h3>
 </template>
 
 <script lang="ts" setup>
@@ -12,7 +13,9 @@ const { t } = useI18n()
 <i18n>
 {
   "en": {
-    "example": "This is an example message"
+    "example": {
+      "message": "This is an example message"
+    }
   }
 }
 </i18n>

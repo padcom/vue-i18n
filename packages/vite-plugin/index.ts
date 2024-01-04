@@ -12,7 +12,6 @@ export default function vueI18n(options: I18nPluginOptions): Plugin {
         return
       }
 
-      // parse yaml
       if (/\.json$/.test(id)) {
         // code if lang="json" the code is already parsed into code
         // we need to get the original content of the block

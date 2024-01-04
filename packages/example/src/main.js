@@ -5,7 +5,10 @@ import App from './App.vue'
 
 const messages = {
   en: {
-    hello: 'Hello, world!',
+    greeting: 'Some greeting',
+    hello: {
+      message: 'Hello, world!',
+    },
   },
 }
 
