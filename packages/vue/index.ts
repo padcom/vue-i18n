@@ -124,8 +124,8 @@ export function useI18n({
   const fallbackLocale = inject(VueI18NFallbackLocaleSymbol) || ref(getAgentLocale())
 
   // Force re-pain of the component used here so that the language gets re-calculated
-  watch(locale, () => { instance?.update() })
-  watch(fallbackLocale, () => { instance?.update() })
+  watch(locale, () => { instance?.update && instance?.update() })
+  watch(fallbackLocale, () => { instance?.update && instance?.update() })
 
   return {
     fallbackLocale,
