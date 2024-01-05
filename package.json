@@ -2,8 +2,7 @@
   "workspaces": [
     "packages/common",
     "packages/vue",
-    "packages/vite-plugin",
-    "packages/example"
+    "packages/vite-plugin"
   ],
   "scripts": {
     "start": "mrdr",
@@ -12,11 +11,9 @@
     "publish": "npm publish --workspaces --if-present"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^4.4.0",
     "mrdr": "^0.1.2",
-    "npm-run-all": "^4.1.5",
     "typescript": "5.0.4",
-    "vite": "^4.5.0",
-    "vite-plugin-dts": "^3.6.1"
+    "vite": "^5.0.11",
+    "vite-plugin-dts": "^3.7.0"
   }
 }

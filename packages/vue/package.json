@@ -39,22 +39,27 @@
   },
   "scripts": {
     "start": "npm run dev",
-    "dev": "run-p build:watch dev:host",
-    "dev:host": "vite",
+    "dev": "npm run build -- -w",
     "build": "vite build",
-    "build:watch": "npm run build -- -w",
     "prepublishOnly": "npm install && npm run build"
   },
   "dependencies": {
-    "@padcom/vue-i18n-common": "*"
+    "@padcom/vue-i18n-common": "*",
+    "vue-demi": "latest"
   },
   "peerDependencies": {
-    "vue": "^3.3.0"
+    "@vue/composition-api": "^1.0.0-rc.1",
+    "vue": "^2.0.0 || >=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@vue/composition-api": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@padcom/vite-plugin-vue-i18n": "*",
-    "@vitejs/plugin-vue": "*",
-    "npm-run-all": "*",
-    "typescript": "*"
+    "typescript": "*",
+    "vite": "*",
+    "vite-plugin-dts": "*"
   }
 }

@@ -39,9 +39,8 @@
   },
   "scripts": {
     "start": "npm run dev",
-    "dev": "npm run build:watch",
+    "dev": "npm run build -- -w",
     "build": "vite build",
-    "build:watch": "npm run build -- -w",
     "prepublishOnly": "npm install && npm run build"
   },
   "dependencies": {

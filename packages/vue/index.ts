@@ -1,7 +1,8 @@
-import { ref, watch, provide, inject, type InjectionKey, type Ref, type Plugin } from 'vue'
-import { getCurrentInstance } from 'vue'
+import { ref, watch, provide, inject, type InjectionKey, type Ref, type Plugin } from 'vue-demi'
+import { getCurrentInstance } from 'vue-demi'
 
 import type { Translations } from '@padcom/vue-i18n-common'
+export type { Translations } from '@padcom/vue-i18n-common'
 
 export interface CreateI18Options {
   locale?: string
@@ -63,7 +64,11 @@ export function createI18Context(options: CreateI18Options) {
  */
 export const i18n: Plugin = {
   install(app: any, options: CreateI18Options) {
-    provideContextValues(app.provide.bind(app), options)
+    // @ts-ignore
+    window.app = app
+    if (app.provide) {
+      provideContextValues(app.provide.bind(app), options)
+    }
   }
 }
 
@@ -107,7 +112,13 @@ export function useI18n({
   useScope = 'local-first'
 }: UseI18nOptions = {}) {
   const instance = getCurrentInstance()
-  const local: Translations = (instance?.type as any).i18n || {}
+  const local: Translations =
+    // Vue 3
+    (instance?.type as any)?.i18n ||
+    // Vue 2
+    (instance as any)?.proxy?.$options.i18n ||
+    // Fallback
+    {}
   const global: Translations = inject(VueI18NTranslationsSymbol) || {}
   const locale = inject(VueI18NLocaleSymbol) || ref(getAgentLocale())
   const fallbackLocale = inject(VueI18NFallbackLocaleSymbol) || ref(getAgentLocale())
