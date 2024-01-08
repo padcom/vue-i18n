@@ -1,48 +1,61 @@
 import { ref, watch, provide, inject, type InjectionKey, type Ref } from 'vue-demi'
 import { getCurrentInstance } from 'vue-demi'
 
-import type { Language, Translations } from '@padcom/vue-i18n-common'
+import type { Language, Translations, Messages } from '@padcom/vue-i18n-common'
 export type { Translations } from '@padcom/vue-i18n-common'
 
 function getAgentLocale() {
   return globalThis.navigator?.language.split('-')[0] || 'en'
 }
 
-function getPropValue(obj: any, prop: string): string|null {
-  if (!obj) return null
+type InternalMessages = Record<string, string>
 
-  const [current, ...rest] = prop.split('.')
-  if (rest.length === 0) {
-    if (typeof obj[current] === 'object') return null
-    else return obj[current]
-  } else {
-    return getPropValue(obj[current], rest.join('.'))
-  }
+function resolve(path: string[], messages: Messages): InternalMessages {
+  return Object.getOwnPropertyNames(messages)
+    .map(key => {
+      if (typeof messages[key] === 'string') {
+        return { [[...path, key].join('.')]: messages[key] }
+      } else {
+        return resolve([...path, key], messages[key])
+      }
+    })
+    .reduce((acc, entry) => ({ ...acc, ...entry }), {})
 }
 
-interface GetKeysOptions {
-  scope: Scope,
-  locale: Language,
-  fallbackLocale: Language,
-  local: Translations,
-  global: Translations,
+type InternalTranslations = Record<string, Record<string, string>>
+
+function transpose(messages: Translations): InternalTranslations {
+  const result = {} as InternalTranslations
+  Object.getOwnPropertyNames(messages).forEach(language => {
+    const keys = resolve([], messages[language])
+    Object.getOwnPropertyNames(keys).forEach(key => {
+      result[key] = result[key] || {}
+      result[key][language] = keys[key]
+    })
+  })
+
+  return result
 }
 
-function getKeys({ scope, locale, fallbackLocale, local, global }: GetKeysOptions) {
-  return {
-    localKeys: scope === 'global'
-      ? { locale: '', messages: {} }
-      : { locale, messages: local[locale] },
-    fallbackLocalKeys: scope === 'global'
-      ? { locale: '', messages: {} }
-      : { locale: fallbackLocale, messages: local[fallbackLocale] },
-    globalKeys: scope === 'local'
-      ? { locale: '', messages: {} }
-      : { locale: locale, messages: global[locale] },
-    fallbackGlobalKeys: scope === 'local'
-      ? { locale: '', messages: {} }
-      : { locale: fallbackLocale, messages: global[fallbackLocale] },
-  }
+function merge(...translations: InternalTranslations[]) {
+  const result = {} as InternalTranslations
+  translations.forEach(translation => {
+    Object.getOwnPropertyNames(translation).forEach(key => {
+      result[key] = result[key] || {}
+      Object.getOwnPropertyNames(translation[key]).forEach(language => {
+        result[key][language] = translation[key][language]
+      })
+    })
+  })
+
+  return result
+}
+
+function resolveTranslations(scope: Scope, local: InternalTranslations, global: InternalTranslations) {
+  console.log('resolveTranslations - local', local)
+  console.log('resolveTranslations - global', global)
+  console.log('resolveTranslations - merged', merge(global, local))
+  return scope === 'global' ? global : scope === 'local-first' ? merge(global, local) : local
 }
 
 interface Translation {
@@ -50,25 +63,15 @@ interface Translation {
   message: string
 }
 
-function getTranslation(
-  key: string,
-  options: GetKeysOptions,
-): Translation {
-  const { localKeys, fallbackLocalKeys, globalKeys, fallbackGlobalKeys } = getKeys(options)
-
-  const localMessage = getPropValue(localKeys.messages, key)
-  const localFallbackMessage = getPropValue(fallbackLocalKeys.messages, key)
-  const globalMessage = getPropValue(globalKeys.messages, key)
-  const globalFallbackMessage = getPropValue(fallbackGlobalKeys.messages, key)
-
-  if (localMessage) {
-    return { locale: localKeys.locale, message: localMessage }
-  } else if (localFallbackMessage) {
-    return { locale: fallbackLocalKeys.locale, message: localFallbackMessage }
-  } else if (globalMessage) {
-    return { locale: globalKeys.locale, message: globalMessage }
-  } else if (globalFallbackMessage) {
-    return { locale: fallbackGlobalKeys.locale, message: globalFallbackMessage }
+function getTranslation(key: string, locale: string, fallbackLocale: string, translations: InternalTranslations): Translation {
+  if (translations[key]) {
+    if (translations[key][locale]) {
+      return { locale, message: translations[key][locale] }
+    } else if (translations[key][fallbackLocale]) {
+      return { locale: fallbackLocale, message: translations[key][fallbackLocale] }
+    } else {
+      return { locale: getAgentLocale(), message: key }
+    }
   } else {
     return { locale: getAgentLocale(), message: key }
   }
@@ -124,7 +127,7 @@ export const VueI18NLocaleSymbol = Symbol('vue-i18n-locale') as InjectionKey<Ref
 interface GlobalI18n {
   locale?: Ref<string>
   fallbackLocale?: Ref<string>
-  messages?: Translations
+  translations?: InternalTranslations
   pluralizationRules?: PluralizationRules
 }
 
@@ -144,13 +147,16 @@ export function createI18n({
   messages = {},
   pluralizationRules = {},
 }: CreateI18Options = {}) {
-  if (i18n.locale || i18n.fallbackLocale || i18n.messages) {
+  if (i18n.locale || i18n.fallbackLocale || i18n.translations) {
     throw new Error('vue-i18n already initialized')
   }
 
   i18n.locale = ref(locale)
   i18n.fallbackLocale = ref(fallbackLocale)
-  i18n.messages = messages
+  console.log('messages:', messages)
+  console.log('transposed messages:', transpose(messages))
+  i18n.translations = resolveTranslations('global', transpose({}), transpose(messages))
+  console.log('i18n.translations', i18n.translations)
   i18n.pluralizationRules = pluralizationRules || {}
 
   return {
@@ -167,32 +173,19 @@ export function createI18n({
       i18n.fallbackLocale!.value = value
     },
     get availableLocales() {
-      return Object.getOwnPropertyNames(i18n.messages)
+      return Object.getOwnPropertyNames(messages)
     },
 
     t(key: string, context: Object & Record<string, any> = {}) {
-      const { message } = getTranslation(key, {
-        scope: 'global',
-        locale: i18n.locale!.value,
-        fallbackLocale: i18n.fallbackLocale!.value,
-        local: {},
-        global: i18n.messages!
-      })
+      const { message } = getTranslation(key, this.locale, this.fallbackLocale, i18n.translations!)
 
       const result = message.replace(PLACEHOLDER_RX, replacePlaceholder(context))
 
       return result
-
     },
 
     tc(key: string, choice: number, context: Object & Record<string, any> = {}) {
-      const translation = getTranslation(key, {
-        scope: 'global',
-        locale: i18n.locale!.value,
-        fallbackLocale: i18n.fallbackLocale!.value,
-        local: {},
-        global: i18n.messages!
-      })
+      const translation = getTranslation(key, this.locale, this.fallbackLocale, i18n.translations!)
 
       const pluralization = i18n.pluralizationRules![translation.locale] || defaultPluralizationRule
       const variants = translation.message.split('|').map(v => v.trim())
@@ -225,7 +218,8 @@ export function createI18Context({
   const fallbackLocaleRef = ref(fallbackLocale)
   provide(VueI18NFallbackLocaleSymbol, ref(fallbackLocaleRef))
 
-  provide(VueI18NTranslationsSymbol, messages)
+  console.log('Transposed messages:', messages)
+  provide(VueI18NTranslationsSymbol, transpose(messages))
 
   provide(VueI18NPluralizationRulesSymbol, pluralizationRules)
 
@@ -261,7 +255,7 @@ export function useI18n({
   const locale = i18n.locale || inject(VueI18NLocaleSymbol)
   const fallbackLocale = i18n.fallbackLocale || inject(VueI18NFallbackLocaleSymbol)
   const pluralizationRules = i18n.pluralizationRules || inject(VueI18NPluralizationRulesSymbol)
-  const global = i18n.messages || inject(VueI18NTranslationsSymbol)
+  const global = i18n.translations || inject(VueI18NTranslationsSymbol)
 
   if (!(locale && fallbackLocale && global && pluralizationRules)) {
     throw new Error('vue-i18n not initialized. Either call createI18n() or createI18nContext()')
@@ -276,6 +270,9 @@ export function useI18n({
     // Fallback
     {}
 
+  const translations = resolveTranslations(useScope, transpose(local), global)
+  console.log('translations', translations)
+
   // Force re-paint of the component used here so that the language gets re-calculated
   watch(locale, () => {
     instance?.update && instance?.update()
@@ -288,13 +285,7 @@ export function useI18n({
     locale,
 
     t(key: string, context: Object & Record<string, any> = {}) {
-      const { message } = getTranslation(key, {
-        scope: useScope,
-        locale: locale.value,
-        fallbackLocale: fallbackLocale.value,
-        local,
-        global,
-      })
+      const { message } = getTranslation(key, locale.value, fallbackLocale.value, translations)
       const result = message.replace(PLACEHOLDER_RX, replacePlaceholder(context))
 
       return result
@@ -302,14 +293,7 @@ export function useI18n({
 
 
     tc(key: string, choice: number, context: Object & Record<string, any> = {}) {
-      const translation = getTranslation(key, {
-        scope: useScope,
-        locale: locale.value,
-        fallbackLocale: fallbackLocale.value,
-        local,
-        global,
-      })
-
+      const translation = getTranslation(key, locale.value, fallbackLocale.value, translations)
       const pluralization = pluralizationRules[translation.locale] || defaultPluralizationRule
       const variants = translation.message.split('|').map(v => v.trim())
       const variant = variants[pluralization(choice, variants.length)]
