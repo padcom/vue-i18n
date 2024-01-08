@@ -99,8 +99,21 @@ export function createI18n({
   i18n.messages = messages
 
   return {
-    locale: i18n.locale,
-    fallbackLocale: i18n.fallbackLocale,
+    get locale() {
+      return i18n.locale!.value
+    },
+    set locale(value: string) {
+        i18n.locale!.value = value
+    },
+    get fallbackLocale() {
+      return i18n.fallbackLocale!.value
+    },
+    set fallbackLocale(value: string) {
+      i18n.fallbackLocale!.value = value
+    },
+    get availableLocales() {
+      return Object.getOwnPropertyNames(i18n.messages)
+    },
 
     t(key: string, context: Object & Record<string, any> = {}) {
       const locale = i18n.locale?.value || getAgentLocale()
@@ -161,8 +174,6 @@ export function useI18n({
 
   // Force re-paint of the component used here so that the language gets re-calculated
   watch(locale, () => {
-    console.log('New locale:', locale.value)
-    console.log('instance:', instance)
     instance?.update && instance?.update()
     instance?.proxy?.$forceUpdate && instance?.proxy?.$forceUpdate()
   })
