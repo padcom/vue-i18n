@@ -4,8 +4,8 @@ import { getCurrentInstance } from 'vue-demi'
 import type { Language, Translations, Messages } from '@padcom/vue-i18n-common'
 export type { Translations } from '@padcom/vue-i18n-common'
 
-function getAgentLocale() {
-  return globalThis.navigator?.language.split('-')[0] || 'en'
+export function getAgentLocale(defaultLocale = 'en') {
+  return globalThis.navigator?.language.split('-')[0] || defaultLocale
 }
 
 type InternalMessages = Record<string, string>
@@ -60,7 +60,12 @@ interface Translation {
   message: string
 }
 
-function getTranslation(key: string, locale: string, fallbackLocale: string, translations: InternalTranslations): Translation {
+function getTranslation(
+  key: string,
+  locale: string,
+  fallbackLocale: string,
+  translations: InternalTranslations,
+): Translation {
   if (translations[key]) {
     if (translations[key][locale]) {
       return { locale, message: translations[key][locale] }
@@ -102,6 +107,17 @@ function defaultPluralizationRule(count: number, numberOfAvailableChoices: numbe
       default: return 2
     }
   }
+}
+
+function p(
+  translation: Translation,
+  choice: number,
+  pluralizationRules: PluralizationRules,
+) {
+  const pluralization = pluralizationRules[translation.locale] || defaultPluralizationRule
+  const variants = translation.message.split('|').map(v => v.trim())
+
+  return variants[pluralization(choice, variants.length)]
 }
 
 export interface CreateI18Options {
@@ -150,10 +166,7 @@ export function createI18n({
 
   i18n.locale = ref(locale)
   i18n.fallbackLocale = ref(fallbackLocale)
-  console.log('messages:', messages)
-  console.log('transposed messages:', transpose(messages))
   i18n.translations = resolveTranslations('global', transpose({}), transpose(messages))
-  console.log('i18n.translations', i18n.translations)
   i18n.pluralizationRules = pluralizationRules || {}
 
   return {
@@ -175,7 +188,6 @@ export function createI18n({
 
     t(key: string, context: Object & Record<string, any> = {}) {
       const { message } = getTranslation(key, this.locale, this.fallbackLocale, i18n.translations!)
-
       const result = message.replace(PLACEHOLDER_RX, replacePlaceholder(context))
 
       return result
@@ -183,10 +195,7 @@ export function createI18n({
 
     tc(key: string, choice: number, context: Object & Record<string, any> = {}) {
       const translation = getTranslation(key, this.locale, this.fallbackLocale, i18n.translations!)
-
-      const pluralization = i18n.pluralizationRules![translation.locale] || defaultPluralizationRule
-      const variants = translation.message.split('|').map(v => v.trim())
-      const variant = variants[pluralization(choice, variants.length)]
+      const variant = p(translation, choice, pluralizationRules)
       const result = variant.replace(PLACEHOLDER_RX, replacePlaceholder(context))
 
       return result
@@ -211,13 +220,9 @@ export function createI18Context({
 }: CreateI18Options) {
   const localeRef = ref(locale)
   provide(VueI18NLocaleSymbol, ref(localeRef))
-
   const fallbackLocaleRef = ref(fallbackLocale)
   provide(VueI18NFallbackLocaleSymbol, ref(fallbackLocaleRef))
-
-  console.log('Transposed messages:', messages)
   provide(VueI18NTranslationsSymbol, transpose(messages))
-
   provide(VueI18NPluralizationRulesSymbol, pluralizationRules)
 
   return {
@@ -253,11 +258,6 @@ export function useI18n({
   const fallbackLocale = i18n.fallbackLocale || inject(VueI18NFallbackLocaleSymbol)
   const pluralizationRules = i18n.pluralizationRules || inject(VueI18NPluralizationRulesSymbol)
   const global = i18n.translations || inject(VueI18NTranslationsSymbol)
-
-  if (!(locale && fallbackLocale && global && pluralizationRules)) {
-    throw new Error('vue-i18n not initialized. Either call createI18n() or createI18nContext()')
-  }
-
   const instance = getCurrentInstance()
   const local: Translations =
     // Vue 3
@@ -267,19 +267,36 @@ export function useI18n({
     // Fallback
     {}
 
+  if (!(locale && fallbackLocale && global && pluralizationRules)) {
+    throw new Error('vue-i18n not initialized. Either call createI18n() or createI18nContext()')
+  }
+
   const translations = resolveTranslations(useScope, transpose(local), global)
-  console.log('translations', translations)
 
   // Force re-paint of the component used here so that the language gets re-calculated
   watch(locale, () => {
     instance?.update && instance?.update()
     instance?.proxy?.$forceUpdate && instance?.proxy?.$forceUpdate()
   })
-  watch(fallbackLocale, () => { instance?.update && instance?.update() })
+  watch(fallbackLocale, () => {
+    instance?.update && instance?.update()
+    instance?.proxy?.$forceUpdate && instance?.proxy?.$forceUpdate()
+  })
 
   return {
     fallbackLocale,
     locale,
+    get availableLocales() {
+      const result = new Set<string>()
+
+      Object.getOwnPropertyNames(translations).forEach(key => {
+        Object.getOwnPropertyNames(translations[key]).forEach(language => {
+          result.add(language)
+        })
+      })
+
+      return [...result]
+    },
 
     t(key: string, context: Object & Record<string, any> = {}) {
       const { message } = getTranslation(key, locale.value, fallbackLocale.value, translations)
@@ -288,13 +305,10 @@ export function useI18n({
       return result
     },
 
-
     tc(key: string, choice: number, context: Object & Record<string, any> = {}) {
       const translation = getTranslation(key, locale.value, fallbackLocale.value, translations)
-      const pluralization = pluralizationRules[translation.locale] || defaultPluralizationRule
-      const variants = translation.message.split('|').map(v => v.trim())
-      const variant = variants[pluralization(choice, variants.length)]
-      const result = variant.replace(PLACEHOLDER_RX, replacePlaceholder(context))
+      const message = p(translation, choice, pluralizationRules)
+      const result = message.replace(PLACEHOLDER_RX, replacePlaceholder(context))
 
       return result
     },
