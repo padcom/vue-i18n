@@ -52,9 +52,6 @@ function merge(...translations: InternalTranslations[]) {
 }
 
 function resolveTranslations(scope: Scope, local: InternalTranslations, global: InternalTranslations) {
-  console.log('resolveTranslations - local', local)
-  console.log('resolveTranslations - global', global)
-  console.log('resolveTranslations - merged', merge(global, local))
   return scope === 'global' ? global : scope === 'local-first' ? merge(global, local) : local
 }
 
