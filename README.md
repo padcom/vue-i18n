@@ -46,7 +46,6 @@ First things first, you need to install the part that provides the actual i18n c
 npm install --save-dev @padcom/vue-i18n
 ```
 
-
 ### Providing messages context
 
 In contrast to the original `vue-i18n` plugin this one does not provide a global function that can inject messages from the global scope. Instead, everything is done using composition functions and Vue's native `provide`/`inject`.
@@ -57,7 +56,7 @@ For applications the easiest way to do it is to install the provided Vue.js plug
 
 ```typescript
 import { createApp } from 'vue'
-import { i18n } from '@padcom/vue-i18n'
+import { createI18n } from '@padcom/vue-i18n'
 
 import App from './App.vue'
 
@@ -67,8 +66,9 @@ const messages = {
   },
 }
 
+createI18n({ messages })
+
 createApp(App)
-  .use(i18n, { messages })
   .mount('#app')
 ```
 
@@ -126,10 +126,37 @@ export default {
 }
 ```
 
-With that kind of structure, this is how you would import the messages when you want to import your messages in `main.js` or when you create the injection context manually:
+With that kind of structure, this is how you would import the messages when you want to import your messages in `./src/i18n.js` or when you create the injection context manually:
 
 ```typescript
-import * as messages from './i18n'
+import * as messages from './locale'
+
+export const i18n = createI18n({
+  messages,
+})
+```
+
+and then in the `main.ts` of your application you simply import the module:
+
+```typescript
+import './i18n'
+```
+
+Of course this is the most extensive version of the configuration. You can do it all in `main.ts` if your application is small enough:
+
+```typescript
+import { createApp } from 'vue'
+import { createI18n } from '@padcom/vue-i18n'
+
+createI18n({
+  messages: {
+    en: {
+      hello: 'Hello, world!',
+    },
+  },
+})
+
+createApp(App).mount('#app')
 ```
 
 ## Usage
@@ -216,6 +243,20 @@ The message resolution is as follows:
 2. Try to resolve the given key using `fallbackLocale` from `<i18n>` provided keys
 3. Try to resolve the given key using global scope messages using `locale`
 4. Try to resolve the given key using global scope messages using `fallbackLocale`
+
+### Reacting to changes in selected locale
+
+When you want to react to when the locale is changed you'd use a Vue.js' watch to do so:
+
+```typescript
+import { watch } from 'vue'
+import { useI18n } from '@padcom/vue-i18n'
+
+const { locale } = useI18n()
+watch(locale, newLocale => {
+  console.log('Locale changed to', newLocale)
+})
+```
 
 ## Closing thoughts
 

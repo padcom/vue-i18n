@@ -11,7 +11,7 @@
     "publish": "npm publish --workspaces --if-present"
   },
   "devDependencies": {
-    "mrdr": "^0.1.2",
+    "mrdr": "^0.1.3",
     "typescript": "5.0.4",
     "vite": "^5.0.11",
     "vite-plugin-dts": "^3.7.0"
