@@ -4,7 +4,7 @@ This package implements simplified mechanism for internationalization (i18n) of 
 
 ## TLDR;
 
-If you want to see all the bits and pieces in action check out the [example](packages/example)
+If you want to see all the bits and pieces in action check out the [example](https://github.com/padcom/vue-i18n-example-vue3)
 
 ## Installation
 
