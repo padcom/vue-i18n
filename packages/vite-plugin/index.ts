@@ -3,7 +3,7 @@ import type { Plugin } from 'vite'
 interface I18nPluginOptions {
 }
 
-export default function vueI18n(options: I18nPluginOptions): Plugin {
+export default function vueI18n(options: I18nPluginOptions = {}): Plugin {
   return {
     name: '@padcom/vue-i18n',
     transform(code: string, id: string) {
